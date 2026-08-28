@@ -25,14 +25,22 @@ gameServer.define("match", MatchRoom);
 app.get("/health", (_req, res) => res.send("OK"));
 
 // Serve static web client if built, otherwise display status page
-const clientDist = path.resolve(process.cwd(), "client/dist");
-if (fs.existsSync(clientDist)) {
+const candidatePaths = [
+  path.resolve(process.cwd(), "client/dist"),
+  path.resolve(process.cwd(), "../client/dist"),
+  path.resolve(process.cwd(), "dist"),
+];
+
+const clientDist = candidatePaths.find((p) => fs.existsSync(p));
+
+if (clientDist) {
+  console.log(`📱 Serving static game client from: ${clientDist}`);
   app.use(express.static(clientDist));
-  app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/health")) return next();
-    res.sendFile(path.join(clientDist, "index.html"));
+  app.use((_req, res) => {
+    res.sendFile(path.resolve(clientDist, "index.html"));
   });
 } else {
+  console.log("⚠️ client/dist not found. Serving default status page.");
   app.get("/", (_req, res) => {
     res.send(`<!DOCTYPE html>
 <html>
