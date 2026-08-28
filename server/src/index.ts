@@ -2,8 +2,8 @@ import { Server } from "colyseus";
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
-import { MatchmakerRoom } from "./rooms/MatchmakerRoom.ts";
-import { MatchRoom } from "./rooms/MatchRoom.ts";
+import { MatchmakerRoom } from "./rooms/MatchmakerRoom.js";
+import { MatchRoom } from "./rooms/MatchRoom.js";
 
 const port = Number(process.env.PORT || process.env.SERVER_PORT || 2567);
 const app = express();
@@ -20,6 +20,7 @@ gameServer.define("match", MatchRoom);
 
 app.get("/health", (_req, res) => res.send("OK"));
 
-gameServer.listen(port).then(() => {
+httpServer.listen(port, () => {
   console.log(`⚔️ Crucible Colyseus server listening on port ${port}`);
 });
+
