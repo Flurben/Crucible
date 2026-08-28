@@ -35,6 +35,9 @@ npm install
 echo "Building shared package..."
 npm run build -w shared
 
+echo "Building client package..."
+npm run build -w client 2>/dev/null || true
+
 echo "Building server package..."
 npm run build -w server
 
