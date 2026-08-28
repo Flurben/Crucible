@@ -14,7 +14,7 @@
   },
   "image": "ghcr.io/parkervcp/yolks:nodejs_20",
   "file_denylist": [],
-  "startup": "bash -c 'git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} . 2>/dev/null || true; bash scripts/pterodactyl-start.sh'",
+  "startup": "node -e \"const {execSync}=require('child_process'),fs=require('fs'); if(!fs.existsSync('package.json')){execSync('git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} .',{stdio:'inherit'});} execSync('bash scripts/pterodactyl-start.sh',{stdio:'inherit'});\"",
   "config": {
     "files": "{}",
     "startup": "{\r\n    \"done\": \"Colyseus\"\r\n}",
