@@ -12,20 +12,16 @@ echo "Current user: $(whoami 2>/dev/null || id -un 2>/dev/null || echo 'containe
 # Configure safe.directory for Git 2.35+
 git config --global --add safe.directory "*" 2>/dev/null || true
 
-# If package.json is missing or .git is missing/corrupt, perform a guaranteed clean setup
-if [ ! -f "package.json" ] || [ ! -d ".git" ]; then
-    echo "Directory clean or incomplete. Synchronizing fresh copy from ${REPO_URL} (branch: ${BRANCH})..."
-    git init .
-    git remote add origin "${REPO_URL}" 2>/dev/null || git remote set-url origin "${REPO_URL}"
-    git fetch origin "${BRANCH}"
-    git reset --hard "origin/${BRANCH}"
-else
-    echo "Updating repository from origin/${BRANCH}..."
-    git remote set-url origin "${REPO_URL}" 2>/dev/null || git remote add origin "${REPO_URL}" 2>/dev/null || true
-    git fetch origin "${BRANCH}"
-    git reset --hard "origin/${BRANCH}"
-    git clean -fd
-fi
+# Kill any orphaned node processes holding port 2567
+pkill -9 -f "node" 2>/dev/null || true
+
+# Force fetch and reset to latest origin commit
+git remote set-url origin "${REPO_URL}" 2>/dev/null || git remote add origin "${REPO_URL}" 2>/dev/null || true
+git fetch origin "${BRANCH}"
+git reset --hard "origin/${BRANCH}"
+
+# Clean dist output folders so TypeScript clean builds
+rm -rf server/dist shared/dist client/dist 2>/dev/null || true
 
 if [ ! -f "package.json" ]; then
     echo "ERROR: package.json missing after git sync! Listing contents of $(pwd):"
@@ -44,6 +40,7 @@ npm run build -w server
 
 echo "Starting Crucible Colyseus Server on port ${PORT:-${SERVER_PORT:-2567}}..."
 npm run start -w server
+
 
 
 
