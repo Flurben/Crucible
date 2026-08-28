@@ -14,7 +14,7 @@
   },
   "image": "ghcr.io/parkervcp/yolks:nodejs_20",
   "file_denylist": [],
-  "startup": "bash -c \"if [ -d .git ]; then git fetch --all && git reset --hard origin/{{GIT_BRANCH}}; elif [ -n \\\"{{GIT_ADDRESS}}\\\" ]; then git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} .; fi && npm install && npm run build -w shared && npm run build -w server && npm run start -w server\"",
+  "startup": "bash -c 'if [ -f scripts/pterodactyl-start.sh ]; then bash scripts/pterodactyl-start.sh; else git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} . && bash scripts/pterodactyl-start.sh; fi'",
   "config": {
     "files": "{}",
     "startup": "{\r\n    \"done\": \"Colyseus\"\r\n}",
