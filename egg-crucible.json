@@ -14,7 +14,7 @@
   },
   "image": "ghcr.io/parkervcp/yolks:nodejs_20",
   "file_denylist": [],
-  "startup": "node -e \"const {execSync}=require('child_process'),fs=require('fs'); if(!fs.existsSync('package.json')){execSync('git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} .',{stdio:'inherit'});} execSync('bash scripts/pterodactyl-start.sh',{stdio:'inherit'});\"",
+  "startup": "node -e \"const {execSync}=require('child_process'),fs=require('fs'); if(!fs.existsSync('scripts/pterodactyl-start.sh')){execSync('git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} .',{stdio:'inherit'});} execSync('bash scripts/pterodactyl-start.sh',{stdio:'inherit'});\"",
   "config": {
     "files": "{}",
     "startup": "{\r\n    \"done\": \"Colyseus\"\r\n}",
