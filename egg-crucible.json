@@ -14,7 +14,7 @@
   },
   "image": "ghcr.io/parkervcp/yolks:nodejs_20",
   "file_denylist": [],
-  "startup": "bash -c 'if [ -f scripts/pterodactyl-start.sh ]; then bash scripts/pterodactyl-start.sh; else git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} . && bash scripts/pterodactyl-start.sh; fi'",
+  "startup": "bash -c 'git clone -b {{GIT_BRANCH}} {{GIT_ADDRESS}} . 2>/dev/null || true; bash scripts/pterodactyl-start.sh'",
   "config": {
     "files": "{}",
     "startup": "{\r\n    \"done\": \"Colyseus\"\r\n}",
