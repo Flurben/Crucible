@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "outDir": "dist",
+    "lib": ["ES2022"],
+    "paths": {
+      "@crucible/shared": ["../shared/src/index.ts"]
+    },
+
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

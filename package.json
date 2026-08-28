@@ -1,0 +1,25 @@
+{
+  "name": "crucible",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Crucible — a distilled 1v1 browser RTS. Easy to learn, brutal to master.",
+  "workspaces": [
+    "shared",
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n shared,server,client -c cyan,magenta,green \"npm run dev -w shared\" \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w shared && npm run build -w client && npm run build -w server",
+    "start": "npm run start -w server",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w client && npm run typecheck -w server",
+    "test": "npx tsx shared/src/sim/sim.test.ts && npx tsx shared/src/sim/ai.test.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

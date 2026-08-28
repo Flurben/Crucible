@@ -1,0 +1,264 @@
+import { useEffect, useRef, useState } from "react";
+import * as Colyseus from "colyseus.js";
+import { useAppStore } from "../store.ts";
+import {
+  type Command,
+  type PlayerId,
+  type SimState,
+  type ServerMsg,
+  tick,
+  hashState,
+  generateMap,
+  BUILDING_STATS,
+  worldToTile,
+  MAP_W,
+  MAP_H,
+  TILE,
+  resetAi,
+  think,
+  canPlaceBuilding
+} from "@crucible/shared";
+import { Camera } from "../game/camera.ts";
+import { Minimap } from "../game/minimap.ts";
+import { HUD } from "../game/hud.tsx";
+import {
+  boxSelect,
+  confirmBuild,
+  createInput,
+  edgePan,
+  hotkeyCommand,
+  issueRightClick,
+  trySelect,
+} from "../game/input/input.ts";
+import { renderGame } from "../game/render.ts";
+
+export function GameScreen() {
+  const { matchConfig, endGame } = useAppStore();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [hudState, setHudState] = useState<SimState | null>(null);
+  const [_trigger, r] = useState(0);
+
+  const localState = useRef<SimState | null>(null);
+  const displayState = useRef<SimState | null>(null);
+  const input = useRef(createInput());
+  const pendingCmds = useRef<Command[]>([]);
+  const room = useRef<Colyseus.Room | null>(null);
+
+  useEffect(() => {
+    if (!matchConfig) return;
+    let running = true;
+    let animId = 0;
+    const cam = new Camera();
+    const mm = new Minimap();
+
+    const st = generateMap(matchConfig.seed);
+    localState.current = st;
+    displayState.current = { ...st }; // Shallow copy for UI rendering between ticks
+    setHudState({ ...st });
+
+    // AI offline mode sync
+    let aiAccumulator = 0;
+
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+
+    function syncOffline(dt: number) {
+        aiAccumulator += dt;
+        while (aiAccumulator >= 0.05) { // 20hz tick
+            aiAccumulator -= 0.05;
+            
+            const currCommands = [...pendingCmds.current];
+            pendingCmds.current = [];
+            
+            let p1Cmds: Command[] = [];
+            if (matchConfig!.mode === "ai" && matchConfig!.difficulty) {
+               p1Cmds = think(localState.current!, 1, matchConfig!.difficulty);
+            }
+            
+            tick(localState.current!, currCommands, p1Cmds);
+            if (localState.current!.winner !== null) {
+                endGame({ 
+                    localPlayer: matchConfig!.localPlayer, 
+                    winner: localState.current!.winner,
+                    reason: "Base Destroyed"
+                });
+                return;
+            }
+            displayState.current = { ...localState.current! };
+            setHudState(displayState.current);
+        }
+    }
+
+    if (matchConfig.mode === "pvp" && "roomId" in matchConfig) {
+        const client = new Colyseus.Client();
+        client.joinById(matchConfig.roomId as string, { ...matchConfig }).then(rm => {
+            room.current = rm as any;
+            rm.onMessage("cmds", (msg: Extract<ServerMsg, {t: "cmds"}>) => {
+                tick(localState.current!, msg.p0, msg.p1);
+                displayState.current = { ...localState.current! };
+                setHudState(displayState.current);
+                if (localState.current!.winner !== null) {
+                    endGame({ 
+                        localPlayer: matchConfig.localPlayer, 
+                        winner: localState.current!.winner,
+                        reason: "Base Destroyed"
+                    });
+                } else {
+                    rm.send("hash", { t: "hash", tick: msg.tick, hash: hashState(localState.current!) });
+                }
+            });
+            rm.onMessage("end", (msg: Extract<ServerMsg, {t: "end"}>) => {
+                endGame({
+                    localPlayer: matchConfig.localPlayer,
+                    winner: msg.winner,
+                    reason: msg.reason
+                });
+            });
+            const netSync = setInterval(() => {
+                if (!running) {
+                    clearInterval(netSync);
+                    return;
+                }
+                rm.send("cmds", { t: "cmds", tick: localState.current!.tick, cmds: pendingCmds.current });
+                pendingCmds.current = [];
+            }, 50);
+        }).catch((e: Error) => {
+            console.error("Match join failed", e);
+            endGame({ localPlayer: matchConfig.localPlayer, winner: (1-matchConfig.localPlayer) as PlayerId, reason: "Connection Failed" });
+        });
+    }
+
+    function render(dt: number) {
+      if (document.hasFocus()) {
+         edgePan(cam, mx, my, dt / 1000);
+      }
+      if (input.current.buildGhost) {
+          const { kind, tx, ty } = input.current.buildGhost;
+          const st = BUILDING_STATS[kind];
+          input.current.buildGhost.valid = canPlaceBuilding(localState.current!, tx, ty, st.w, st.h);
+      }
+      renderGame(ctx, displayState.current!, cam, input.current, matchConfig!.localPlayer);
+      mm.draw(ctx, displayState.current!, cam, matchConfig!.localPlayer);
+    }
+
+    let lastT = performance.now();
+    let mx = 0, my = 0;
+
+    function loop(t: number) {
+      if (!running) return;
+      const dt = t - lastT;
+      lastT = t;
+      if (matchConfig!.mode !== "pvp") {
+          syncOffline(dt / 1000);
+      }
+      if (running) render(dt);
+      animId = requestAnimationFrame(loop);
+    }
+    animId = requestAnimationFrame(loop);
+
+    function onResize() {
+      cam.resize(window.innerWidth, window.innerHeight);
+      mm.resize(cam.vw, cam.vh);
+      canvas.width = cam.vw;
+      canvas.height = cam.vh;
+    }
+    window.addEventListener("resize", onResize);
+    onResize();
+
+    const cvs = canvas;
+    
+    cvs.oncontextmenu = (e) => e.preventDefault();
+
+    cvs.onmousemove = (e) => {
+      mx = e.clientX;
+      my = e.clientY;
+      const w = cam.screenToWorld(mx, my);
+      input.current.hoverWorld = w;
+      if (input.current.boxStart) input.current.boxEnd = w;
+      if (input.current.buildGhost) {
+          const st = BUILDING_STATS[input.current.buildGhost.kind];
+          input.current.buildGhost.tx = worldToTile(w.x) - ((st.w/2)|0);
+          input.current.buildGhost.ty = worldToTile(w.y) - ((st.h/2)|0);
+      }
+    };
+
+    cvs.onmousedown = (e) => {
+      const w = cam.screenToWorld(e.clientX, e.clientY);
+      
+      
+      if (e.button === 0) { // left
+         if (mm.hit(e.clientX, e.clientY)) {
+             const mhit = mm.click(e.clientX, e.clientY, MAP_W*TILE, MAP_H*TILE);
+             cam.centerOn(mhit.x, mhit.y);
+         } else if (input.current.buildGhost) {
+             const cmds = confirmBuild(localState.current!, input.current, matchConfig!.localPlayer, w.x, w.y, (tx, ty, w, h) => canPlaceBuilding(localState.current!, tx, ty, w, h));
+             pendingCmds.current.push(...cmds);
+         } else {
+             input.current.boxStart = w;
+             input.current.boxEnd = w;
+         }
+      } else if (e.button === 2) { // right
+          input.current.buildGhost = null; // cancel build
+          const cmds = issueRightClick(localState.current!, input.current, matchConfig!.localPlayer, w.x, w.y, input.current.keys.has("a"));
+          pendingCmds.current.push(...cmds);
+      }
+    };
+
+    cvs.onmouseup = (e) => { const additive = input.current.keys.has("shift");
+      if (e.button === 0 && input.current.boxStart && input.current.boxEnd) {
+          const dx = Math.abs(input.current.boxStart.x - input.current.boxEnd.x);
+          const dy = Math.abs(input.current.boxStart.y - input.current.boxEnd.y);
+          
+          if (dx < 5 && dy < 5) {
+              trySelect(localState.current!, input.current, matchConfig!.localPlayer, input.current.boxStart.x, input.current.boxStart.y, additive);
+          } else {
+              boxSelect(localState.current!, input.current, matchConfig!.localPlayer, input.current.boxStart, input.current.boxEnd, additive);
+          }
+          input.current.boxStart = null;
+          input.current.boxEnd = null;
+          r(p => p+1); // force hud refresh on select update if nothing ticks
+      }
+    };
+
+    window.onkeydown = (e) => {
+        input.current.keys.add(e.key.toLowerCase());
+        const cmds = hotkeyCommand(localState.current!, input.current, matchConfig!.localPlayer, e.key);
+        pendingCmds.current.push(...cmds);
+    };
+    
+    window.onkeyup = (e) => {
+        input.current.keys.delete(e.key.toLowerCase());
+    };
+
+    return () => {
+      running = false;
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", onResize);
+      cvs.oncontextmenu = null;
+      cvs.onmousemove = null;
+      cvs.onmousedown = null;
+      cvs.onmouseup = null;
+      window.onkeydown = null;
+      window.onkeyup = null;
+      if (room.current) {
+          room.current.leave();
+      }
+      resetAi();
+    };
+  }, [matchConfig, endGame]);
+
+  if (!hudState) return null;
+
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
+      <canvas ref={canvasRef} style={{ display: "block" }} />
+      <HUD 
+        state={hudState} 
+        localPlayer={matchConfig!.localPlayer} 
+        input={input.current} 
+        sendCommands={(cmds) => pendingCmds.current.push(...cmds)} 
+        setInput={(fn) => { fn(input.current); r(p => p+1); }}
+      />
+    </div>
+  );
+}
