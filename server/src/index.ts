@@ -5,7 +5,7 @@ import { createServer } from "http";
 import { MatchmakerRoom } from "./rooms/MatchmakerRoom.ts";
 import { MatchRoom } from "./rooms/MatchRoom.ts";
 
-const port = Number(process.env.PORT || 2567);
+const port = Number(process.env.PORT || process.env.SERVER_PORT || 2567);
 const app = express();
 app.use(cors());
 app.use(express.json());
