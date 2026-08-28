@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import * as Colyseus from "colyseus.js";
 import { useAppStore } from "../store.ts";
 import {
@@ -46,11 +46,6 @@ export function GameScreen() {
 
   useEffect(() => {
     if (!matchConfig) return;
-    const canvas = canvasRef.current!;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    if (!ctx) return;
-
     let running = true;
     let animId = 0;
     const cam = new Camera();
@@ -63,6 +58,9 @@ export function GameScreen() {
 
     // AI offline mode sync
     let aiAccumulator = 0;
+
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
 
     function syncOffline(dt: number) {
         aiAccumulator += dt;
@@ -249,18 +247,19 @@ export function GameScreen() {
     };
   }, [matchConfig, endGame]);
 
+  if (!hudState) return null;
+
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", overflow: "hidden" }}>
       <canvas ref={canvasRef} style={{ display: "block" }} />
-      {hudState && (
-        <HUD 
-          state={hudState} 
-          localPlayer={matchConfig!.localPlayer} 
-          input={input.current} 
-          sendCommands={(cmds) => pendingCmds.current.push(...cmds)} 
-          setInput={(fn) => { fn(input.current); r(p => p+1); }}
-        />
-      )}
+      <HUD 
+        state={hudState} 
+        localPlayer={matchConfig!.localPlayer} 
+        input={input.current} 
+        sendCommands={(cmds) => pendingCmds.current.push(...cmds)} 
+        setInput={(fn) => { fn(input.current); r(p => p+1); }}
+      />
     </div>
   );
 }
+
