@@ -6,10 +6,10 @@ import {
   BUILDING_BONUS,
   BUILDING_STATS,
   UNIT_STATS,
-} from "./constants.ts";
-import { buildingCenter, distSq, SpatialHash } from "./helpers.ts";
-import { setBlockedRect } from "./mapgen.ts";
-import type { Building, SimState, Unit } from "./types.ts";
+} from "./constants.js";
+import { buildingCenter, distSq, SpatialHash } from "./helpers.js";
+import { setBlockedRect } from "./mapgen.js";
+import type { Building, SimState, Unit } from "./types.js";
 
 const unitHash = new SpatialHash();
 const queryBuf: number[] = [];

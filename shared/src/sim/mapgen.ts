@@ -9,10 +9,10 @@ import {
   TILE,
   UNIT_STATS,
   type Terrain,
-} from "./constants.ts";
-import { buildingCenter, inBounds, tileIndex, idleOrder } from "./helpers.ts";
-import { Rng } from "./rng.ts";
-import type { Building, GoldMine, SimState, Unit } from "./types.ts";
+} from "./constants.js";
+import { buildingCenter, inBounds, tileIndex, idleOrder } from "./helpers.js";
+import { Rng } from "./rng.js";
+import type { Building, GoldMine, SimState, Unit } from "./types.js";
 
 export const TERRAIN_PLAINS = 0;
 export const TERRAIN_FOREST = 1;

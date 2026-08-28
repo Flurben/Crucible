@@ -1,6 +1,9 @@
-import { Room, Client } from "colyseus";
+import colyseus from "colyseus";
 import { Schema } from "@colyseus/schema";
 import type { ClientMsg, ServerMsg, Command, PlayerId, TickCommands } from "@crucible/shared";
+
+const { Room } = colyseus;
+type Client = any;
 
 class State extends Schema {}
 

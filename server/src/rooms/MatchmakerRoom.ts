@@ -1,6 +1,9 @@
-import { Room, Client, matchMaker } from "colyseus";
+import colyseus from "colyseus";
 import type { ClientMsg, ServerMsg, RatingRecord } from "@crucible/shared";
 import { DEFAULT_RATING } from "@crucible/shared";
+
+const { Room, matchMaker } = colyseus;
+type Client = any;
 
 interface QueueEntry {
   client: Client;

@@ -8,11 +8,11 @@ import {
   UPGRADE_TICKS,
   type BuildingKind,
   type PlayerId,
-} from "./constants.ts";
-import { buildingCenter, idleOrder, moveOrder } from "./helpers.ts";
-import { canPlaceBuilding, setBlockedRect } from "./mapgen.ts";
-import { findPath } from "./pathfinding.ts";
-import type { Building, Command, SimState, Unit } from "./types.ts";
+} from "./constants.js";
+import { buildingCenter, idleOrder, moveOrder } from "./helpers.js";
+import { canPlaceBuilding, setBlockedRect } from "./mapgen.js";
+import { findPath } from "./pathfinding.js";
+import type { Building, Command, SimState, Unit } from "./types.js";
 
 function ownedUnits(state: SimState, player: PlayerId, ids: number[]): Unit[] {
   const set = new Set(ids);

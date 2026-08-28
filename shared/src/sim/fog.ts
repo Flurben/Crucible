@@ -1,6 +1,6 @@
-import { BUILDING_STATS, MAP_H, MAP_W, UNIT_STATS, type PlayerId } from "./constants.ts";
-import { inBounds, tileIndex, worldToTile } from "./helpers.ts";
-import type { SimState } from "./types.ts";
+import { BUILDING_STATS, MAP_H, MAP_W, UNIT_STATS, type PlayerId } from "./constants.js";
+import { inBounds, tileIndex, worldToTile } from "./helpers.js";
+import type { SimState } from "./types.js";
 
 function stampVision(grid: Uint8Array, explored: Uint8Array, cx: number, cy: number, r: number): void {
   const r2 = r * r;

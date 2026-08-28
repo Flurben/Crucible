@@ -14,16 +14,16 @@ if [ -n "${GIT_ADDRESS}" ]; then
     
     if [ ! -d ".git" ]; then
         echo "📥 Initializing fresh repository clone..."
-        git init
-        git remote add origin "${GIT_ADDRESS}"
-        git fetch --all
-        git checkout -b "${GIT_BRANCH:-main}" "origin/${GIT_BRANCH:-main}" || git checkout "${GIT_BRANCH:-main}"
-        git reset --hard "origin/${GIT_BRANCH:-main}"
+        git init 2>/dev/null || true
+        git remote add origin "${GIT_ADDRESS}" 2>/dev/null || true
+        git fetch --all 2>/dev/null || true
+        git checkout -b "${GIT_BRANCH:-main}" "origin/${GIT_BRANCH:-main}" 2>/dev/null || git checkout "${GIT_BRANCH:-main}" 2>/dev/null || true
+        git reset --hard "origin/${GIT_BRANCH:-main}" 2>/dev/null || true
     else
         echo "🔄 Pulling latest changes from GitHub..."
-        git config pull.rebase false || true
-        git fetch --all
-        git reset --hard "origin/${GIT_BRANCH:-main}"
+        git config pull.rebase false 2>/dev/null || true
+        git fetch --all 2>/dev/null || true
+        git reset --hard "origin/${GIT_BRANCH:-main}" 2>/dev/null || true
     fi
 
     echo "📦 Installing / updating node dependencies..."
@@ -39,3 +39,4 @@ MODIFIED_STARTUP=$(echo -n "${STARTUP}" | sed -e 's/{{/${/g' -e 's/}}/}/g')
 
 echo "🚀 Executing startup command: ${MODIFIED_STARTUP}"
 exec eval "${MODIFIED_STARTUP}"
+

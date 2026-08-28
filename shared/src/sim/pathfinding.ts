@@ -1,5 +1,5 @@
-import { MAP_H, MAP_W, TILE } from "./constants.ts";
-import { inBounds, tileIndex, worldToTile } from "./helpers.ts";
+import { MAP_H, MAP_W, TILE } from "./constants.js";
+import { inBounds, tileIndex, worldToTile } from "./helpers.js";
 
 const DX = [1, -1, 0, 0, 1, 1, -1, -1];
 const DY = [0, 0, 1, -1, 1, -1, 1, -1];

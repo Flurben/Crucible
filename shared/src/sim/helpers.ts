@@ -1,4 +1,4 @@
-import { MAP_H, MAP_W, TILE } from "./constants.ts";
+import { MAP_H, MAP_W, TILE } from "./constants.js";
 
 export function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;

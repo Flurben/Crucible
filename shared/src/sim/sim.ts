@@ -1,8 +1,8 @@
-import { COMMAND_DELAY, HASH_INTERVAL } from "./constants.ts";
-import { tick } from "./engine.ts";
-import { hashState } from "./hash.ts";
-import { generateMap } from "./mapgen.ts";
-import type { Command, SimState, TickCommands } from "./types.ts";
+import { COMMAND_DELAY, HASH_INTERVAL } from "./constants.js";
+import { tick } from "./engine.js";
+import { hashState } from "./hash.js";
+import { generateMap } from "./mapgen.js";
+import type { Command, SimState, TickCommands } from "./types.js";
 
 export class Simulation {
   readonly state: SimState;

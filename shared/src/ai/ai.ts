@@ -3,10 +3,10 @@ import {
   UNIT_STATS,
   type BuildingKind,
   type PlayerId,
-} from "../sim/constants.ts";
-import { buildingCenter, distSq } from "../sim/helpers.ts";
-import { canPlaceBuilding } from "../sim/mapgen.ts";
-import type { AiDifficulty, Building, Command, SimState, Unit } from "../sim/types.ts";
+} from "../sim/constants.js";
+import { buildingCenter, distSq } from "../sim/helpers.js";
+import { canPlaceBuilding } from "../sim/mapgen.js";
+import type { AiDifficulty, Building, Command, SimState, Unit } from "../sim/types.js";
 
 interface AiMemory {
   phase: "open" | "mid" | "push";

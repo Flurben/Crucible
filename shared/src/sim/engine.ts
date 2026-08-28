@@ -9,9 +9,9 @@ import {
   TILE,
   UNIT_STATS,
   type PlayerId,
-} from "./constants.ts";
-import { TERRAIN_FOREST } from "./mapgen.ts";
-import { applyCommands } from "./commands.ts";
+} from "./constants.js";
+import { TERRAIN_FOREST } from "./mapgen.js";
+import { applyCommands } from "./commands.js";
 import {
   entityPos,
   findAggro,
@@ -21,11 +21,11 @@ import {
   strikeBuilding,
   strikeUnit,
   towerStrike,
-} from "./combat.ts";
-import { updateFog } from "./fog.ts";
-import { buildingCenter, distSq, idleOrder, stepToward, tileIndex, worldToTile } from "./helpers.ts";
-import { findPath, nextWaypoint } from "./pathfinding.ts";
-import type { Building, Command, SimState, Unit } from "./types.ts";
+} from "./combat.js";
+import { updateFog } from "./fog.js";
+import { buildingCenter, distSq, idleOrder, stepToward, tileIndex, worldToTile } from "./helpers.js";
+import { findPath, nextWaypoint } from "./pathfinding.js";
+import type { Building, Command, SimState, Unit } from "./types.js";
 
 export function tick(state: SimState, p0: Command[], p1: Command[]): void {
   if (state.winner !== null) return;
