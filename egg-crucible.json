@@ -23,7 +23,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\napt-get update\napt-get install -y git curl nodejs npm\ncd /mnt/server\nif [ -n \"${GIT_ADDRESS}\" ]; then\n  git clone -b ${GIT_BRANCH} ${GIT_ADDRESS} .\nfi\nnpm install\nnpm run build -w shared\nnpm run build -w server\necho \"Installation complete!\"",
+      "script": "#!/bin/bash\ngit config --global --add safe.directory \"*\"\napt-get update\napt-get install -y git curl nodejs npm\ncd /mnt/server\nif [ -n \"${GIT_ADDRESS}\" ]; then\n  git clone -b ${GIT_BRANCH} ${GIT_ADDRESS} .\nfi\nnpm install\nnpm run build -w shared\nnpm run build -w server\necho \"Installation complete!\"",
       "container": "node:20-bullseye-slim",
       "entrypoint": "bash"
     }
